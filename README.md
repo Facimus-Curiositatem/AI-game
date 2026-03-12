@@ -464,3 +464,4 @@ java -cp out backgammon.Main
 - Backgammon Galaxy — How to Play: https://www.backgammongalaxy.com/how-to-play-backgammon
 - Wikipedia — Backgammon: https://en.wikipedia.org/wiki/Backgammon
 - Detailed project plan and full ruleset: [PLAN.md](PLAN.md)
+- Expectiminimax algorithm: https://en.wikipedia.org/wiki/Expectiminimax
