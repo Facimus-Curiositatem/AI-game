@@ -47,9 +47,7 @@ public class Move {
         return to == BEAR_OFF;
     }
 
-    /**
-     * Returns a human-readable description using 1-based point numbers.
-     */
+    
     public String describe() {
         String fromStr = isEnterFromBar() ? "BAR" : String.valueOf(from + 1);
         String toStr = isBearOff() ? "OFF" : String.valueOf(to + 1);
