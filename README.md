@@ -459,7 +459,7 @@ java -cp out backgammon.Main
 ## References
 
 - Russell, S. & Norvig, P. *Artificial Intelligence: A Modern Approach*.
-  Section 6.5 — Games That Include an Element of Chance.
+  Section 6.5 — Games That Include an Element of Chance. (Second edition)
 - Backgammon rules (Spanish): https://www.ludoteka.com/clasika/backgammon-es.html
 - Backgammon Galaxy — How to Play: https://www.backgammongalaxy.com/how-to-play-backgammon
 - Wikipedia — Backgammon: https://en.wikipedia.org/wiki/Backgammon
