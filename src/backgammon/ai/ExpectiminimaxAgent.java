@@ -36,10 +36,14 @@ public class ExpectiminimaxAgent {
 
     private final GameLogic gameLogic;
     private final HeuristicEvaluator evaluator;
+    private final Player aiPlayer;
+    private final Player opponent;
 
-    public ExpectiminimaxAgent(GameLogic gameLogic, HeuristicEvaluator evaluator) {
+    public ExpectiminimaxAgent(GameLogic gameLogic, HeuristicEvaluator evaluator, Player aiPlayer) {
         this.gameLogic = gameLogic;
         this.evaluator = evaluator;
+        this.aiPlayer = aiPlayer;
+        this.opponent = aiPlayer.opponent();
     }
 
     /**
@@ -62,7 +66,7 @@ public class ExpectiminimaxAgent {
         for (Move move : legalMoves) {
             BackgammonState child = gameLogic.applyMove(state, move);
             // After AI moves, switch to opponent's turn for the subtree
-            child.setCurrentPlayer(Player.WHITE);
+            child.setCurrentPlayer(opponent);
 
             // Next level is a CHANCE node (opponent will roll a die)
             double value = chanceNode(child, MAX_DEPTH - 1);
@@ -92,7 +96,7 @@ public class ExpectiminimaxAgent {
             stateWithDie.setDieRoll(die);
 
             double value;
-            if (stateWithDie.getCurrentPlayer() == Player.BLACK) {
+            if (stateWithDie.getCurrentPlayer() == aiPlayer) {
                 value = maxNode(stateWithDie, depth);
             } else {
                 value = minNode(stateWithDie, depth);
@@ -117,7 +121,7 @@ public class ExpectiminimaxAgent {
         if (legalMoves.isEmpty()) {
             // No legal moves — turn forfeited, pass to opponent via chance node
             BackgammonState passState = state.deepCopy();
-            passState.setCurrentPlayer(Player.WHITE);
+            passState.setCurrentPlayer(opponent);
             return chanceNode(passState, depth - 1);
         }
 
@@ -125,7 +129,7 @@ public class ExpectiminimaxAgent {
 
         for (Move move : legalMoves) {
             BackgammonState child = gameLogic.applyMove(state, move);
-            child.setCurrentPlayer(Player.WHITE);
+            child.setCurrentPlayer(opponent);
 
             double value = chanceNode(child, depth - 1);
             bestValue = Math.max(bestValue, value);
@@ -147,7 +151,7 @@ public class ExpectiminimaxAgent {
         if (legalMoves.isEmpty()) {
             // No legal moves — turn forfeited, pass to AI via chance node
             BackgammonState passState = state.deepCopy();
-            passState.setCurrentPlayer(Player.BLACK);
+            passState.setCurrentPlayer(aiPlayer);
             return chanceNode(passState, depth - 1);
         }
 
@@ -155,7 +159,7 @@ public class ExpectiminimaxAgent {
 
         for (Move move : legalMoves) {
             BackgammonState child = gameLogic.applyMove(state, move);
-            child.setCurrentPlayer(Player.BLACK);
+            child.setCurrentPlayer(aiPlayer);
 
             double value = chanceNode(child, depth - 1);
             bestValue = Math.min(bestValue, value);
