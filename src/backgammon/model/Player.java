@@ -31,7 +31,7 @@ public enum Player {
      * Returns a display-friendly name.
      */
     public String displayName() {
-        return this == WHITE ? "White (Human)" : "Black (AI)";
+        return this == WHITE ? "White" : "Black";
     }
 
     /**
