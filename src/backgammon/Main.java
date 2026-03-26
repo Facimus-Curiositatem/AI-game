@@ -9,34 +9,40 @@ import backgammon.model.Player;
 import backgammon.ui.ConsoleUI;
 
 import java.util.List;
-import java.util.Random;
 
 /**
  * Main entry point for the Backgammon game.
  *
  * Game loop:
  *   1. Initialize the board to standard starting position.
- *   2. Determine who goes first (each rolls one die, higher goes first).
- *   3. Alternate turns: roll die, select move (human input or AI search), apply move.
- *   4. Display the board after each move.
- *   5. Check for terminal condition (all pieces borne off).
- *   6. Announce winner.
+ *   2. Let the user choose which color to play (AI takes the other).
+ *   3. Determine who goes first (each rolls one die, higher goes first).
+ *   4. Alternate turns: enter die roll, select move (human input or AI search), apply move.
+ *   5. Display the board after each move.
+ *   6. Check for terminal condition (all pieces borne off).
+ *   7. Announce winner.
  *
- * Human plays as WHITE (O). AI plays as BLACK (X).
+ * Die rolls are entered manually (physical dice used in competition).
  */
 public class Main {
 
-    private static final Random random = new Random();
-
     public static void main(String[] args) {
-        // Initialize components
+        // Initialize core components
         GameLogic gameLogic = new GameLogic();
-        HeuristicEvaluator evaluator = new HeuristicEvaluator(gameLogic);
-        ExpectiminimaxAgent aiAgent = new ExpectiminimaxAgent(gameLogic, evaluator);
         ConsoleUI ui = new ConsoleUI();
 
         // Display welcome
         ui.displayWelcome();
+
+        // Let the user choose their color
+        Player humanPlayer = ui.promptColorChoice();
+        Player aiPlayer = humanPlayer.opponent();
+        ui.setPlayers(humanPlayer);
+        ui.displayRoleAssignment(humanPlayer);
+
+        // Configure AI with the chosen color
+        HeuristicEvaluator evaluator = new HeuristicEvaluator(gameLogic, aiPlayer);
+        ExpectiminimaxAgent aiAgent = new ExpectiminimaxAgent(gameLogic, evaluator, aiPlayer);
 
         // Initialize game state
         BackgammonState state = new BackgammonState();
@@ -46,9 +52,8 @@ public class Main {
         Player firstPlayer = determineFirstPlayer(ui);
         state.setCurrentPlayer(firstPlayer);
 
-        // If AI goes first, roll and use the first-move die
-        // If human goes first, the first-move die was already shown
-        int firstDie = rollDie();
+        // Roll die for the first turn
+        int firstDie = ui.promptDieRoll(firstPlayer);
         state.setDieRoll(firstDie);
         ui.displayDieRoll(firstPlayer, firstDie);
 
@@ -68,7 +73,7 @@ public class Main {
                 // No legal moves — turn forfeited
                 ui.displayNoMoves(currentPlayer);
                 chosenMove = null;
-            } else if (currentPlayer == Player.WHITE) {
+            } else if (currentPlayer == humanPlayer) {
                 // Human's turn
                 chosenMove = ui.promptHumanMove(legalMoves);
                 ui.displayMessage("You chose: " + chosenMove.describe());
@@ -95,8 +100,8 @@ public class Main {
             Player nextPlayer = currentPlayer.opponent();
             state.setCurrentPlayer(nextPlayer);
 
-            // Roll die for next turn
-            int die = rollDie();
+            // Enter die roll for next turn
+            int die = ui.promptDieRoll(nextPlayer);
             state.setDieRoll(die);
             ui.displayDieRoll(nextPlayer, die);
 
@@ -115,12 +120,13 @@ public class Main {
 
     /**
      * Determines who goes first by having each player roll one die.
-     * Re-rolls on ties.
+     * Die values are entered manually. Re-rolls on ties.
      */
     private static Player determineFirstPlayer(ConsoleUI ui) {
+        System.out.println(" Determining who goes first...");
         while (true) {
-            int whiteRoll = rollDie();
-            int blackRoll = rollDie();
+            int whiteRoll = ui.promptDieRoll(Player.WHITE);
+            int blackRoll = ui.promptDieRoll(Player.BLACK);
 
             if (whiteRoll != blackRoll) {
                 Player first = whiteRoll > blackRoll ? Player.WHITE : Player.BLACK;
@@ -129,12 +135,5 @@ public class Main {
             }
             ui.displayMessage("Both rolled " + whiteRoll + ". Rolling again...");
         }
-    }
-
-    /**
-     * Rolls a single die (1-6).
-     */
-    private static int rollDie() {
-        return random.nextInt(6) + 1;
     }
 }
