@@ -14,9 +14,70 @@ import java.util.Scanner;
 public class ConsoleUI {
 
     private final Scanner scanner;
+    private Player humanPlayer = Player.WHITE;
+    private Player aiPlayer = Player.BLACK;
 
     public ConsoleUI() {
         this.scanner = new Scanner(System.in);
+    }
+
+    /**
+     * Sets which player is human and which is AI.
+     */
+    public void setPlayers(Player humanPlayer) {
+        this.humanPlayer = humanPlayer;
+        this.aiPlayer = humanPlayer.opponent();
+    }
+
+    /**
+     * Prompts the user to choose which color to play as.
+     */
+    public Player promptColorChoice() {
+        System.out.println(" Choose your color:");
+        System.out.println("   [1] White (O) — moves 24 -> 1");
+        System.out.println("   [2] Black (X) — moves 1 -> 24");
+        System.out.println();
+        while (true) {
+            System.out.print(" Enter choice (1 or 2): ");
+            String input = scanner.nextLine().trim();
+            if (input.equals("1")) return Player.WHITE;
+            if (input.equals("2")) return Player.BLACK;
+            System.out.println(" Invalid choice. Please enter 1 or 2.");
+        }
+    }
+
+    /**
+     * Displays which color is human and which is AI.
+     */
+    public void displayRoleAssignment(Player humanPlayer) {
+        Player ai = humanPlayer.opponent();
+        System.out.println();
+        System.out.printf(" You play as %s (%c). AI plays as %s (%c).%n",
+                humanPlayer.displayName(), humanPlayer.symbol(),
+                ai.displayName(), ai.symbol());
+        System.out.printf(" %s moves: 24 -> 1  |  %s moves: 1 -> 24%n",
+                Player.WHITE.displayName(), Player.BLACK.displayName());
+        System.out.println("=".repeat(62));
+        System.out.println();
+    }
+
+    /**
+     * Prompts the user to enter a die roll (1-6).
+     */
+    public int promptDieRoll(Player player) {
+        while (true) {
+            System.out.printf(" Enter die roll for %s (1-6): ", player.displayName());
+            String input = scanner.nextLine().trim();
+            try {
+                int value = Integer.parseInt(input);
+                if (value >= 1 && value <= 6) {
+                    return value;
+                }
+                System.out.println(" Invalid value. Die must be between 1 and 6.");
+            } catch (NumberFormatException e) {
+                System.out.println(" Invalid input. Please enter a number.");
+            }
+        }
     }
 
     /**
@@ -99,9 +160,11 @@ public class ConsoleUI {
         System.out.println("=".repeat(62));
 
         // --- Status line ---
-        System.out.printf(" White (O - Human): Bar=%d  Off=%d  |  Black (X - AI): Bar=%d  Off=%d%n",
-                state.getBar(Player.WHITE), state.getBorneOff(Player.WHITE),
-                state.getBar(Player.BLACK), state.getBorneOff(Player.BLACK));
+        String whiteRole = (humanPlayer == Player.WHITE) ? "Human" : "AI";
+        String blackRole = (humanPlayer == Player.BLACK) ? "Human" : "AI";
+        System.out.printf(" White (O - %s): Bar=%d  Off=%d  |  Black (X - %s): Bar=%d  Off=%d%n",
+                whiteRole, state.getBar(Player.WHITE), state.getBorneOff(Player.WHITE),
+                blackRole, state.getBar(Player.BLACK), state.getBorneOff(Player.BLACK));
 
         if (state.getDieRoll() > 0) {
             System.out.printf(" Current player: %s  |  Die roll: %d%n",
@@ -218,9 +281,5 @@ public class ConsoleUI {
         System.out.println("       BACKGAMMON — Simplified (1 Die, No Bets)");
         System.out.println("       AI powered by Expectiminimax (Depth 2)");
         System.out.println("=".repeat(62));
-        System.out.println("  You play as White (O). AI plays as Black (X).");
-        System.out.println("  White moves: 24 -> 1  |  Black moves: 1 -> 24");
-        System.out.println("=".repeat(62));
-        System.out.println();
     }
 }
