@@ -19,8 +19,8 @@ import backgammon.model.Player;
  */
 public class HeuristicEvaluator {
 
-    private static final Player AI = Player.BLACK;
-    private static final Player HUMAN = Player.WHITE;
+    private final Player aiPlayer;
+    private final Player humanPlayer;
 
     // Weights for each indicator (tunable)
     private static final double W_PIP_COUNT    = 1.0;
@@ -32,8 +32,10 @@ public class HeuristicEvaluator {
 
     private final GameLogic gameLogic;
 
-    public HeuristicEvaluator(GameLogic gameLogic) {
+    public HeuristicEvaluator(GameLogic gameLogic, Player aiPlayer) {
         this.gameLogic = gameLogic;
+        this.aiPlayer = aiPlayer;
+        this.humanPlayer = aiPlayer.opponent();
     }
 
     /**
@@ -46,46 +48,46 @@ public class HeuristicEvaluator {
         // Terminal states get extreme values
         if (gameLogic.isTerminal(state)) {
             Player winner = gameLogic.getWinner(state);
-            if (winner == AI) return 10000.0;
-            if (winner == HUMAN) return -10000.0;
+            if (winner == aiPlayer) return 10000.0;
+            if (winner == humanPlayer) return -10000.0;
         }
 
         double score = 0.0;
 
         // Indicator 1: Pip Count Difference
         // Lower pip count is better. We want (Human pips - AI pips) to be positive for AI.
-        int aiPips = gameLogic.computePipCount(state, AI);
-        int humanPips = gameLogic.computePipCount(state, HUMAN);
+        int aiPips = gameLogic.computePipCount(state, aiPlayer);
+        int humanPips = gameLogic.computePipCount(state, humanPlayer);
         score += W_PIP_COUNT * (humanPips - aiPips);
 
         // Indicator 2: Blots Difference
         // Fewer blots is better. We want (Human blots - AI blots) to be positive for AI.
-        int aiBlots = countBlots(state, AI);
-        int humanBlots = countBlots(state, HUMAN);
+        int aiBlots = countBlots(state, aiPlayer);
+        int humanBlots = countBlots(state, humanPlayer);
         score += W_BLOTS * (humanBlots - aiBlots);
 
         // Indicator 3: Bar Pieces Difference
         // Fewer pieces on bar is better. We want (Human bar - AI bar) to be positive for AI.
-        int aiBar = state.getBar(AI);
-        int humanBar = state.getBar(HUMAN);
+        int aiBar = state.getBar(aiPlayer);
+        int humanBar = state.getBar(humanPlayer);
         score += W_BAR * (humanBar - aiBar);
 
         // Indicator 4: Borne Off Difference
         // More pieces borne off is better. We want (AI borne off - Human borne off).
-        int aiBorneOff = state.getBorneOff(AI);
-        int humanBorneOff = state.getBorneOff(HUMAN);
+        int aiBorneOff = state.getBorneOff(aiPlayer);
+        int humanBorneOff = state.getBorneOff(humanPlayer);
         score += W_BORNE_OFF * (aiBorneOff - humanBorneOff);
 
         // Indicator 5: Made Points Difference
         // More made points (2+ pieces = anchors) is better for board control.
-        int aiMadePoints = countMadePoints(state, AI);
-        int humanMadePoints = countMadePoints(state, HUMAN);
+        int aiMadePoints = countMadePoints(state, aiPlayer);
+        int humanMadePoints = countMadePoints(state, humanPlayer);
         score += W_MADE_POINTS * (aiMadePoints - humanMadePoints);
 
         // Indicator 6: Home Board Strength Difference
         // More pieces in home board = closer to bearing off.
-        int aiHome = countHomeBoardPieces(state, AI);
-        int humanHome = countHomeBoardPieces(state, HUMAN);
+        int aiHome = countHomeBoardPieces(state, aiPlayer);
+        int humanHome = countHomeBoardPieces(state, humanPlayer);
         score += W_HOME_BOARD * (aiHome - humanHome);
 
         return score;
